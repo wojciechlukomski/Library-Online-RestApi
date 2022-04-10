@@ -1,20 +1,17 @@
 package com.lukomski.wojtek.LibraryOnlineApp.model;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 
 @Entity
 @Table(name = "users")
 @Data
+@Getter
+@Setter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,11 +29,17 @@ public class User {
     @Column
     private String lastName;
 
-    @Column
+    @Column(unique = true)
     private String email;
 
     @OneToOne
-    @JoinColumn(name = "bookId")
-    private Book book;
+    @JoinColumn(referencedColumnName = "bookId", name = "borrowedBook")
+    private Book borrowedBook;
+
+    @OneToOne
+    @JoinColumn(referencedColumnName = "bookId", name = "purchasedBook")
+    private Book purchasedBook;
+
+
 }
 
