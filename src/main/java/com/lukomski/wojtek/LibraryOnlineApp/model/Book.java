@@ -1,19 +1,17 @@
 package com.lukomski.wojtek.LibraryOnlineApp.model;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Entity //pojedyncza encja w bazie danych
+@Entity
 @Table(name = "books")
-@Data
+@Getter
+@Setter
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //tworzy incrementacje
@@ -42,5 +40,18 @@ public class Book {
 
     @Column
     private Boolean available = true;
+
+
+    @OneToOne
+    @JoinColumn(name = "user_renting_id")
+    private User userRenting;
+
+    @OneToOne
+    @JoinColumn(name = "user_purchasing_id")
+    private User userPurchasing;
+
+
 }
+
+
 

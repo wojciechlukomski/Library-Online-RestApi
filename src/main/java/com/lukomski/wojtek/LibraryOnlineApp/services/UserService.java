@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
     private final UserRepository userRepository;
     private final UserLoginValidator userLoginValidator;
 
@@ -20,9 +21,10 @@ public class UserService {
         this.userRepository = userRepository;
         this.userLoginValidator = userLoginValidator;
     }
+
     public User add(User user) {
         userLoginValidator.validate(user);
-        if(!userLoginValidator.validate(user)){
+        if (!userLoginValidator.validate(user)) {
             return userRepository.save(user);
         }
         throw new UserAlreadyExistException("Please choose different login");

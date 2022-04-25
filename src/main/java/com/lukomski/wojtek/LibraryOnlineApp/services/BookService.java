@@ -1,26 +1,31 @@
 package com.lukomski.wojtek.LibraryOnlineApp.services;
 
+import com.lukomski.wojtek.LibraryOnlineApp.exceptions.BookIsNotAvailableException;
 import com.lukomski.wojtek.LibraryOnlineApp.exceptions.RentTimeTooLongException;
 import com.lukomski.wojtek.LibraryOnlineApp.model.*;
 import com.lukomski.wojtek.LibraryOnlineApp.repositories.BookRepository;
 import com.lukomski.wojtek.LibraryOnlineApp.repositories.UserRepository;
+import com.lukomski.wojtek.LibraryOnlineApp.validators.BookAvailableValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class BookService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
+    private final BookAvailableValidator bookAvailableValidator;
+    public static List<Book> purchasedBooks = new LinkedList<>();
 
     @Autowired
-    public BookService(BookRepository bookRepository, UserRepository userRepository) {
+    public BookService(BookRepository bookRepository, UserRepository userRepository, BookAvailableValidator bookAvailableValidator) {
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
+        this.bookAvailableValidator = bookAvailableValidator;
     }
 
     public Book add(Book book) {
@@ -56,13 +61,21 @@ public class BookService {
             throw new RentTimeTooLongException("Rent time is limited to 50 days, please choose shorter period");
         }
         Book book = bookRepository.getById(bookId);
-        User userRentingBook = userRepository.getById(userId);
-        userRentingBook.setBorrowedBook(book);
-        userRepository.save(userRentingBook);
-        bookRepository.updateDateOfRentWithAvailability(available, dateOfStartRent, dateOfEndRent, bookId);
-        BigDecimal price = book.getPricePerDay().multiply(new BigDecimal(daysOfRent));
-        return new RentBookResponse(book,userRentingBook,price);
+        if(!bookAvailableValidator.validate(book)) {
+            throw new BookIsNotAvailableException("This book is not available! Please choose different book");
+        }
+            User userRentingBook = userRepository.getById(userId);
+            userRentingBook.setBorrowedBook(book);
+            book.setUserRenting(userRentingBook);
+
+
+            userRepository.save(userRentingBook);
+            bookRepository.updateDateOfRentWithAvailability(available, dateOfStartRent, dateOfEndRent, bookId);
+            BigDecimal price = book.getPricePerDay().multiply(new BigDecimal(daysOfRent));
+            bookRepository.save(book);
+            return new RentBookResponse(book,userRentingBook, price);
     }
+
     public ReturnBookResponse returnBook(boolean available, Integer bookId, Integer userId){
         Book book = bookRepository.getById(bookId);
         User userRentingBook = userRepository.getById(userId);
@@ -78,12 +91,18 @@ public class BookService {
     }
     public PurchaseBookResponse purchaseBook(Integer bookId, Integer userId){
         Book book = bookRepository.getById(bookId);
-        User userRentingBook = userRepository.getById(userId);
-        userRentingBook.setPurchasedBook(book);
-        userRepository.save(userRentingBook);
-        bookRepository.deleteById(bookId);
+        if(!bookAvailableValidator.validate(book)) {
+            throw new BookIsNotAvailableException("This book is not available! Please choose different book");
+        }
+        User userPurchasingBook = userRepository.getById(userId);
+
+        userPurchasingBook.setPurchasedBook(book);
+        userRepository.save(userPurchasingBook);
+        book.setUserPurchasing(userPurchasingBook);
+        book.setAvailable(false);
+        bookRepository.save(book);
         BigDecimal retailPrice = book.getRetailPrice();
 
-        return new PurchaseBookResponse(book,userRentingBook,retailPrice);
+        return new PurchaseBookResponse(book,userPurchasingBook,retailPrice);
     }
 }

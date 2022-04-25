@@ -1,15 +1,16 @@
 package com.lukomski.wojtek.LibraryOnlineApp.model;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
 @Table(name = "users")
-@Data
 @Getter
 @Setter
 public class User {
@@ -32,14 +33,23 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    @JoinColumn
     @OneToOne
-    @JoinColumn(referencedColumnName = "bookId", name = "borrowedBook")
     private Book borrowedBook;
 
+    @JoinColumn
     @OneToOne
-    @JoinColumn(referencedColumnName = "bookId", name = "purchasedBook")
     private Book purchasedBook;
+//
+//    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
+//    private List<Book> borrowedBooks;
 
 
+
+//    private List<Book> purchasedBook = new ArrayList<>();
+
+//    public void saveBooks(Book book) {
+//        borrowedBook.add(book);
+//    }
 }
 

@@ -1,6 +1,8 @@
 package com.lukomski.wojtek.LibraryOnlineApp.controller;
 
+import com.lukomski.wojtek.LibraryOnlineApp.exceptions.BookIsNotAvailableException;
 import com.lukomski.wojtek.LibraryOnlineApp.exceptions.RentTimeTooLongException;
+import com.lukomski.wojtek.LibraryOnlineApp.exceptions.WrongBookIdException;
 import com.lukomski.wojtek.LibraryOnlineApp.model.*;
 import com.lukomski.wojtek.LibraryOnlineApp.repositories.BookRepository;
 import com.lukomski.wojtek.LibraryOnlineApp.services.BookService;
@@ -15,12 +17,10 @@ import java.util.Optional;
 @RestController
 public class BookController {
     private final BookService bookService;
-    private final BookRepository bookRepository;
 
     @Autowired
-    public BookController(BookService bookService, BookRepository bookRepository) {
+    public BookController(BookService bookService) {
         this.bookService = bookService;
-        this.bookRepository = bookRepository;
     }
 
     @GetMapping("book/all")
@@ -74,24 +74,34 @@ public class BookController {
         return ResponseEntity.of(rentBookResponse);
     }
 
-    @ExceptionHandler(RentTimeTooLongException.class)
-    ResponseEntity<String> handlerExceptions() {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Rent time is limited to 50 days, please choose shorter period");
-    }
 
     @PostMapping(value = "/book/return", consumes = "application/json", produces = "application/json")
     public ResponseEntity<ReturnBookResponse> returnBook(@RequestBody ReturnBookRequest returnBookRequest) {
         Optional<ReturnBookResponse> returnBookResponse = Optional.of(bookService.returnBook(returnBookRequest.isAvailable(),
                 returnBookRequest.getBookId(), returnBookRequest.getUserId()));
         return ResponseEntity.of(returnBookResponse);
-
-
     }
 
-    @PutMapping(value = "/book/purchase", consumes = "application/json", produces = "application/json")
+    @PostMapping(value = "/book/purchase", consumes = "application/json", produces = "application/json")
     public ResponseEntity<PurchaseBookResponse> purchaseBook(@RequestBody PurchaseBookRequest purchaseBookRequest) {
         Optional<PurchaseBookResponse> purchaseBookResponse = Optional.of(bookService.purchaseBook(purchaseBookRequest.getBookId()
-                ,purchaseBookRequest.getUserId()));
-        return ResponseEntity.of(purchaseBookResponse);
+                , purchaseBookRequest.getUserId()));
+
+        return purchaseBookResponse
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+    @ExceptionHandler(RentTimeTooLongException.class)
+    ResponseEntity<String> rentTimeTooLong() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Rent time is limited to 50 days, please choose shorter period");
+    }
+    @ExceptionHandler(BookIsNotAvailableException.class)
+    ResponseEntity<String> bookIsNotAvailable() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This book is Not available, please choose different one:)");
+    }
+
+    @ExceptionHandler(WrongBookIdException.class)
+    ResponseEntity<String> wrongBookId() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Wrong bookId ! This book doesn't exist");
     }
 }

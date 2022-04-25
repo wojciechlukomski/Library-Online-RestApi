@@ -11,6 +11,7 @@ public class UserLoginValidator {
 
     @Autowired
     public UserLoginValidator(UserRepository userRepository) {
+
         this.userRepository = userRepository;
     }
 
