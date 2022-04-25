@@ -40,10 +40,9 @@ public class User {
     @JoinColumn
     @OneToOne
     private Book purchasedBook;
-//
-//    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
-//    private List<Book> borrowedBooks;
 
+//    @OneToMany(mappedBy = "userRenting",fetch = FetchType.LAZY)
+//    private List<Book> borrowedBooks;
 
 
 //    private List<Book> purchasedBook = new ArrayList<>();
