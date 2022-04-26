@@ -65,10 +65,8 @@ public class BookService {
             throw new BookIsNotAvailableException("This book is not available! Please choose different book");
         }
             User userRentingBook = userRepository.getById(userId);
-            userRentingBook.setBorrowedBook(book);
+            userRentingBook.saveBorrowedBooks(book);
             book.setUserRenting(userRentingBook);
-
-
             userRepository.save(userRentingBook);
             bookRepository.updateDateOfRentWithAvailability(available, dateOfStartRent, dateOfEndRent, bookId);
             BigDecimal price = book.getPricePerDay().multiply(new BigDecimal(daysOfRent));
@@ -79,7 +77,8 @@ public class BookService {
     public ReturnBookResponse returnBook(boolean available, Integer bookId, Integer userId){
         Book book = bookRepository.getById(bookId);
         User userRentingBook = userRepository.getById(userId);
-        userRentingBook.setBorrowedBook(null);
+        userRentingBook.returnBorrowedBook(book);
+        book.setUserRenting(null);
         userRepository.save(userRentingBook);
         bookRepository.updateAvailability(available, bookId);
         book.setDateOfEndRent(null);
@@ -96,7 +95,7 @@ public class BookService {
         }
         User userPurchasingBook = userRepository.getById(userId);
 
-        userPurchasingBook.setPurchasedBook(book);
+        userPurchasingBook.savePurchasedBooks(book);
         userRepository.save(userPurchasingBook);
         book.setUserPurchasing(userPurchasingBook);
         book.setAvailable(false);

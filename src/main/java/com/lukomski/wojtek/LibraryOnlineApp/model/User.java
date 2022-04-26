@@ -1,6 +1,5 @@
 package com.lukomski.wojtek.LibraryOnlineApp.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,22 +32,22 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    @JoinColumn
-    @OneToOne
-    private Book borrowedBook;
 
-    @JoinColumn
-    @OneToOne
-    private Book purchasedBook;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "userRenting", cascade = CascadeType.ALL)
+    private List<Book> borrowedBooks = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "userRenting",fetch = FetchType.LAZY)
-//    private List<Book> borrowedBooks;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "userPurchasing", cascade = CascadeType.ALL)
+    private List<Book> purchasedBooks = new ArrayList<>();
 
+    public void saveBorrowedBooks(Book book) {
+        borrowedBooks.add(book);
+    }
 
-//    private List<Book> purchasedBook = new ArrayList<>();
-
-//    public void saveBooks(Book book) {
-//        borrowedBook.add(book);
-//    }
+    public void savePurchasedBooks(Book book) {
+        purchasedBooks.add(book);
+    }
+    public void returnBorrowedBook(Book book){
+        borrowedBooks.remove(book);
+    }
 }
 

@@ -4,7 +4,6 @@ import com.lukomski.wojtek.LibraryOnlineApp.exceptions.BookIsNotAvailableExcepti
 import com.lukomski.wojtek.LibraryOnlineApp.exceptions.RentTimeTooLongException;
 import com.lukomski.wojtek.LibraryOnlineApp.exceptions.WrongBookIdException;
 import com.lukomski.wojtek.LibraryOnlineApp.model.*;
-import com.lukomski.wojtek.LibraryOnlineApp.repositories.BookRepository;
 import com.lukomski.wojtek.LibraryOnlineApp.services.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -75,10 +74,10 @@ public class BookController {
     }
 
 
-    @PostMapping(value = "/book/return", consumes = "application/json", produces = "application/json")
+   @PostMapping(value = "/book/return", consumes = "application/json", produces = "application/json")
     public ResponseEntity<ReturnBookResponse> returnBook(@RequestBody ReturnBookRequest returnBookRequest) {
         Optional<ReturnBookResponse> returnBookResponse = Optional.of(bookService.returnBook(returnBookRequest.isAvailable(),
-                returnBookRequest.getBookId(), returnBookRequest.getUserId()));
+                returnBookRequest.getBookId( ), returnBookRequest.getUserId()));
         return ResponseEntity.of(returnBookResponse);
     }
 
@@ -91,10 +90,12 @@ public class BookController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
     @ExceptionHandler(RentTimeTooLongException.class)
     ResponseEntity<String> rentTimeTooLong() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Rent time is limited to 50 days, please choose shorter period");
     }
+
     @ExceptionHandler(BookIsNotAvailableException.class)
     ResponseEntity<String> bookIsNotAvailable() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("This book is Not available, please choose different one:)");

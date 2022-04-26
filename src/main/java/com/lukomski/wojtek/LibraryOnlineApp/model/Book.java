@@ -1,6 +1,6 @@
 package com.lukomski.wojtek.LibraryOnlineApp.model;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,13 +41,14 @@ public class Book {
     @Column
     private Boolean available = true;
 
-
-    @OneToOne
-    @JoinColumn(name = "user_renting_id")
+    @JsonIgnore
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_renting_id", referencedColumnName = "userId")
     private User userRenting;
 
-    @OneToOne
-    @JoinColumn(name = "user_purchasing_id")
+    @JsonIgnore
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_purchasing_id", referencedColumnName = "userId")
     private User userPurchasing;
 
 

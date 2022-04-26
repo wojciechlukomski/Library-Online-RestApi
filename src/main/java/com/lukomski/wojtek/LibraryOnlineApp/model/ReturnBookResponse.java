@@ -1,6 +1,7 @@
 package com.lukomski.wojtek.LibraryOnlineApp.model;
 
 import lombok.Data;
+
 @Data
 public class ReturnBookResponse {
     private final Book book;
